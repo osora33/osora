@@ -39,7 +39,7 @@
 	
 	<select id="maxArticleno" resultType="int">
 		<![CDATA[
-			select max(articleno) from t_board
+			select nvl(max(articleno), 0) from t_board
 		]]>
 	</select>
 	

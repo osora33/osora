@@ -43,7 +43,11 @@ public class BoardControllerImpl implements BoardController {
 		
 		ModelAndView mav = new ModelAndView(viewName);
 		
-		mav.addObject("boardList", boardList);
+		if(boardList == null || boardList.equals("")){
+			mav.addObject("boardList", '0');
+		}else{
+			mav.addObject("boardList", boardList);
+		}
 		
 		HttpSession session = request.getSession();
 		String id = (String)session.getAttribute("id");
@@ -189,7 +193,11 @@ public class BoardControllerImpl implements BoardController {
 		
 		ModelAndView mav = new ModelAndView(viewName);
 		
-		mav.addObject("searchList", searchList);
+		if(searchList == null || searchList.equals("")){
+			mav.addObject("searchList", '0');
+		}else{
+			mav.addObject("searchList", searchList);
+		}
 		
 		HttpSession session = request.getSession();
 		String id = (String)session.getAttribute("id");
