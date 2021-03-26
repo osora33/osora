@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!--JSP에서 사용될 자바스크립트나 이미지 파일 경로를 지정합니다. -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- 뷰리졸버 빈을 생성하면서 응답할 JSP페이지의 경로를 지정합니다. -->
+	<!--
+		기존에 JSP뷰를 표시 하기 위해 사용했던   InternalResourceViewResolver를 더이상 사용하지 않으므로 주석 처리 한다음
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	 -->
+	 
+	 <!-- 타일즈 기능에 관련된 객체(빈)들을 설정합니다. 
+	            그리고 스프링의  TilesConfigurer클래스 빈을 생성하면서  URL요청에 대해 브라우저에 나타낼 정보가 저장된  타일즈 설정 파일을 패키지 명을 포함해서  tiles에서 읽어 들임 -->
+	 
+	 <beans:bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles2.TilesConfigurer">
+	 	
+	 	<beans:property name="definitions">
+	 		<beans:list>
+	 			<!-- 패키지 tiles의  모든 설정 xml파일을 읽어 들이기 위해 경로 저장 -->
+				<beans:value>classpath:tiles/*.xml</beans:value>
+			</beans:list>
+	 	</beans:property>
+	 	
+	 	<beans:property name="preparerFactoryClass"
+			          value="org.springframework.web.servlet.view.tiles2.SpringBeanPreparerFactory" />
+	 </beans:bean>
+	 
+	 
+	 <!-- 타일즈 뷰리졸버를 사용해 화면을 표시 하기 위해 객체 생성 -->
+	 <beans:bean id="viewResolver"
+		class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		
+		<beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView" />
+	
+	</beans:bean>
+	
+	
+	<!-- 
+			JSP페이지에 타일즈 라이브러리 적용 하기 
+			JSP에 타일즈 기능을 적용하는 과정
+			1.tiles.xml을 작성합니다.
+			2.레이아웃용 JSP를 작성합니다.
+			3.레이아웃에 표시할 JSP를 작성합니다.
+			4.컨트롤러에서 tiles.xml에서 설정한 뷰이름을 반환합니다.
+			
+			=====
+			1. 먼저 각 JSP에 대한 화면 레이아웃을 설정하는 tiles.xml부터 작성합니다.
+			   src/main/resource패키지에  tiles패키지를 만든 후 tiles_member.xml파일을 생성합니다.
+			   
+			2.레이아웃에 사용되는 JSP 작성하기 
+			  
+			  /WEB-INF/views폴더 내부에  common폴더를 생성하여  그안에 ~  tiles_member.xml에서 지정한 위치에  JSP파일들을 만들어 줍니다.
+			  footer.jsp
+			  header.jsp
+			  layout.jsp
+			  side.jsp
+			  
+			  /WEB-INF/views폴더 내부에  main.jsp 만들기 
+			  
+			3.레이아웃에 표시할 main.jsp를 작성합니다.
+			
+			4.뷰이름 요청 컨트롤러 만들기 
+			마지막으로 <definition>태그 name속성의 뷰이름을 타일즈 뷰리졸버로 반환할  컨트롤러를 만들자.
+			
+				src/main/java패키지 내부에 com.myspring.pro27패키지 안에  HomeController.java 파일 만들기 
+			
+	 -->
+	 
+	 
+	
+	<!-- 
+	com.myspring.pro27 하위 패키지에 존재하는 클래스에 애너테이션 기호가 적용되도록 설정 하는 태그 이다.
+ 	-->  
+	<context:component-scan base-package="com.myspring.pro27" />
+	
+	
+	
+</beans:beans>
+
+
+
+
+

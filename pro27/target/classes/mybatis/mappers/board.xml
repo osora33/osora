@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="mapper.board">
+
+	<resultMap type="boardVO" id="boardResult">
+		<result property="articleno" column="articleno"/>
+		<result property="parentno" column="parentno"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="imagefilename" column="imagefilename"/>
+		<result property="writedate" column="writedate"/>
+		<result property="id" column="id"/>
+	</resultMap>
+	
+	<select id="selectAllArticleList" resultMap="boardResult">
+		<![CDATA[
+			select * from t_board start with parentno=0
+
+ 			CONNECT BY parentno = PRIOR  articleno
+
+			ORDER SIBLINGS BY articleno desc, parentno ASC
+		]]>
+	</select>
+	
+	<select id="viewContent" resultType="boardVO"  parameterType="String">
+		<![CDATA[
+			select * from t_board where articleno=#{articleno}
+		]]>
+	</select>
+	
+	<update id="updateArticle" parameterType="boardVO">
+		<![CDATA[
+			update t_board set title=#{title}, content=#{content} where articleno=#{articleno}
+		]]>
+	</update>
+	
+	<select id="maxArticleno" resultType="int">
+		<![CDATA[
+			select max(articleno) from t_board
+		]]>
+	</select>
+	
+	<insert id="insertArticle" parameterType="boardVO">
+		<![CDATA[
+			insert into t_board(articleno, parentno, title, content, writedate, id) values(#{articleno}, 0, #{title}, #{content}, #{writedate}, #{id})
+		]]>
+	</insert>
+	
+	<delete id="deleteArticle" parameterType="String">
+		<![CDATA[
+			delete from t_board where articleno=#{articleno}
+		]]>
+	</delete>
+	
+	<select id="searchArticles" parameterType="String" resultMap="boardResult">
+		<![CDATA[
+			select * from t_board 
+			
+			where title like '%' || #{search} || '%' or id like '%' || #{search} || '%' or content like '%' || #{search} || '%'
+			
+			start with parentno=0
+
+ 			CONNECT BY parentno = PRIOR  articleno
+
+			ORDER SIBLINGS BY articleno desc, parentno ASC
+		]]>
+	</select>
+</mapper>

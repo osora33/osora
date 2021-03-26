@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+
+<!--  회원 조회시  log4j.xml을 이용해 웹브라우저로 응답할  JSP이름을 로그 메세지로 출력하기  -->
+
+
+	<!-- ConsoleAppender클래스를 이용해서 로그 메세지를  Console창으로 출력하기 위해 위치 지정 -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+	
+		<param name="Target" value="System.out" />
+		
+		<!--PatternLayout클래스로  출력형식을 지정합니다.  -->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p: %c - %m%n" />
+		</layout>
+		
+	</appender>
+	
+	<!-- DailyRollingFile클래스를 이용해서 로그 메세지를 파일로 출력하기 -->
+	<appender name="dailyFileAppender" class="org.apache.log4j.DailyRollingFileAppender">
+		<!-- 로그 파일의 생성 위치를 설정 -->
+		<param name="File" value="C:\\spring\\logs\\output.log"  />
+		<param name="Append" value="true"/>
+		
+		<!-- PatternLayout클래스의 출력형식을 지정합니다. -->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+			<param name="ConversionPattern" value="[%d{HH:mm:ss}][%-5p](%F:%L)-%m%n"/>
+		</layout>
+	
+	</appender>
+	
+	
+	<!-- <logger>태그로 com.myspring.pro27 패키지에 존재하는 클래스들의 로그 레벨을 info로 설정 하여  로깅메세지를 Appender태그의 클래스로 전달 합니다. -->
+	<logger name="com.myspring.pro27">
+		<level value="info" />
+	</logger>
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="info" />
+	</logger>	
+	
+	<logger name="org.springframework.beans">
+		<level value="info" />
+	</logger>
+	
+	<logger name="org.springframework.context">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="info" />
+	</logger>
+
+	<!--
+		<root>태그는 애플리케이션 전체에 적용되는 로그 레벨을 설정하는 태그이다.
+		<root>태그의 하위 <prioriry>태그의 value속성값을 debug레벨로 변경한두 다시 회원정보를 조회 해 봅시다.
+	 -->
+	<root>
+		<priority value="debug" /> 
+		<appender-ref ref="console" /><!-- 애플리케이션 전체 로그를 Cosole창에 출력 -->
+		<appender-ref ref="dailyFileAppender"/> <!-- 애플리케이션 전체 로그를 파일로 출력 -->
+	</root>
+	
+</log4j:configuration>
+
+
+
+
+
+
