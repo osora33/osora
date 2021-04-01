@@ -15,13 +15,31 @@
 		<result property="id" column="id"/>
 	</resultMap>
 	
-	<select id="selectAllArticleList" resultMap="boardResult">
+	<resultMap type="rippleVO" id="rippleResult">
+		<result property="articleno" column="articleno"/>
+		<result property="rno" column="rno"/>
+		<result property="id" column="id"/>
+		<result property="ripple" column="ripple"/>
+		<result property="writedate" column="writedate"/>
+	</resultMap>
+	
+	<select id="selectAllArticleList" parameterType="paging" resultMap="boardResult">
 		<![CDATA[
-			select * from t_board start with parentno=0
-
- 			CONNECT BY parentno = PRIOR  articleno
-
-			ORDER SIBLINGS BY articleno desc, parentno ASC
+		select * 
+		from(
+		select rownum as rnum, a.* 
+		from(select * from t_board start with parentno=0
+		    CONNECT BY parentno = PRIOR  articleno
+		    ORDER SIBLINGS BY articleno desc, parentno ASC) a
+		) 
+		where 
+		rnum>= #{startList} and rnum<= #{listSize}
+		]]>
+	</select>
+	
+	<select id="selectAllArticleListCnt" resultType="int">
+		<![CDATA[
+			select count(*) as listCnt from t_board
 		]]>
 	</select>
 	
@@ -55,17 +73,58 @@
 		]]>
 	</delete>
 	
-	<select id="searchArticles" parameterType="String" resultMap="boardResult">
+	<select id="searchArticles" parameterType="paging" resultMap="boardResult">
 		<![CDATA[
-			select * from t_board 
-			
+		select * 
+		from(
+		select rownum as rnum, a.* 
+		from(select * from t_board 
 			where title like '%' || #{search} || '%' or id like '%' || #{search} || '%' or content like '%' || #{search} || '%'
-			
 			start with parentno=0
-
  			CONNECT BY parentno = PRIOR  articleno
-
-			ORDER SIBLINGS BY articleno desc, parentno ASC
+			ORDER SIBLINGS BY articleno desc, parentno ASC) a
+		) 
+		where 
+		rnum>= #{startList} and rnum<= #{listSize}
+			
 		]]>
 	</select>
+	
+	<select id="searchArticlesCnt" parameterType="String" resultType="int">
+		<![CDATA[
+			select count(*) as listCnt from t_board
+			where title like '%' || #{search} || '%' or id like '%' || #{search} || '%' or content like '%' || #{search} || '%'
+		]]>
+	</select>
+	
+	<insert id="ripple" parameterType="rippleVO">
+		<![CDATA[
+			insert into t_ripple(articleno, rno, id, ripple, writedate) 
+			values(#{articleno}, #{rno}, #{id}, #{ripple}, #{writedate})
+		]]>
+	</insert>
+	
+	<select id="maxRno" resultType="int">
+		<![CDATA[
+			select nvl(max(rno), 0) from t_ripple
+		]]>
+	</select>
+	
+	<select id="viewRipple" parameterType="int" resultMap="rippleResult">
+		<![CDATA[
+			select * from t_ripple where articleno=#{articleno}
+		]]>
+	</select>
+	
+	<update id="rupdate" parameterType="rippleVO">
+		<![CDATA[
+			update t_ripple set ripple=#{ripple} where rno=#{rno}
+		]]>
+	</update>
+	
+	<delete id="deleter" parameterType="int">
+		<![CDATA[
+			delete from t_ripple where rno=#{rno}
+		]]>
+	</delete>
 </mapper>

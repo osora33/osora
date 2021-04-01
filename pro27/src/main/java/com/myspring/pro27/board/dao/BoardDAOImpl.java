@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
+import com.myspring.pro27.board.Paging;
 import com.myspring.pro27.board.vo.BoardVO;
+import com.myspring.pro27.board.vo.RippleVO;
 
 @Repository("boardDAO")
 public class BoardDAOImpl implements BoardDAO{
@@ -18,11 +20,18 @@ public class BoardDAOImpl implements BoardDAO{
 	@Autowired SqlSession sqlSession;
 	
 	@Override
-	public List selectAllArticleList() throws DataAccessException {
+	public List selectAllArticleList(Paging paging) throws DataAccessException {
 		List<BoardVO> articlesList = null;
-		articlesList = sqlSession.selectList("mapper.board.selectAllArticleList");
+		System.out.println("paging : " + paging.toString());
+		articlesList = sqlSession.selectList("mapper.board.selectAllArticleList", paging);
 		
 		return articlesList;
+	}
+	
+	@Override
+	public int selectAllArticleListCnt() throws DataAccessException {
+		int cnt = sqlSession.selectOne("mapper.board.selectAllArticleListCnt");
+		return cnt;
 	}
 	
 	@Override
@@ -64,8 +73,43 @@ public class BoardDAOImpl implements BoardDAO{
 	}
 	
 	@Override
-	public List searchArticles(String search) throws DataAccessException {
-		List searchList = sqlSession.selectList("mapper.board.searchArticles", search);
+	public List searchArticles(Paging paging) throws DataAccessException {
+		List searchList = sqlSession.selectList("mapper.board.searchArticles", paging);
 		return searchList;
+	}
+	
+	@Override
+	public int searchArticlesCnt(String search) throws DataAccessException {
+		int cnt = sqlSession.selectOne("mapper.board.searchArticlesCnt", search);
+		return cnt;
+	}
+	
+	@Override
+	public void ripple(RippleVO vo) throws DataAccessException {
+		int rno = (int)sqlSession.selectOne("mapper.board.maxRno") + 1;
+		vo.setRno(rno);
+		
+		Timestamp date = new Timestamp(System.currentTimeMillis());
+		vo.setWritedate(date);
+		
+		System.out.println("vo : " + vo.getArticleno()+ " / " + vo.getRno() + " / " + vo.getId() + " / " + vo.getRipple() + " / " + vo.getWritedate() );
+		
+		sqlSession.insert("mapper.board.ripple", vo);
+	}
+	
+	@Override
+	public List viewRipple(String articleno) throws DataAccessException {
+		List rippleList = sqlSession.selectList("mapper.board.viewRipple", articleno);
+		return rippleList;
+	}
+	
+	@Override
+	public void rupdate(RippleVO vo) throws DataAccessException {
+		sqlSession.update("mapper.board.rupdate", vo);
+	}
+	
+	@Override
+	public void deleter(int rno) throws DataAccessException {
+		sqlSession.delete("mapper.board.deleter", rno);
 	}
 }

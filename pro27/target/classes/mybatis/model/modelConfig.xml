@@ -7,5 +7,7 @@
 	<typeAliases>
 		<typeAlias type="com.myspring.pro27.member.vo.MemberVO"  alias="memberVO" />
 		<typeAlias type="com.myspring.pro27.board.vo.BoardVO" alias="boardVO"/>
+		<typeAlias type="com.myspring.pro27.board.Paging" alias = "paging"/>
+		<typeAlias type="com.myspring.pro27.board.vo.RippleVO" alias="rippleVO" />
 	</typeAliases>
 </configuration>

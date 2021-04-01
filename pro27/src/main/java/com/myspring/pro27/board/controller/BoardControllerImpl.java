@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.myspring.pro27.board.Paging;
 import com.myspring.pro27.board.service.BoardService;
 import com.myspring.pro27.board.vo.BoardVO;
+import com.myspring.pro27.board.vo.RippleVO;
 
 @Controller("BoardController")
 public class BoardControllerImpl implements BoardController {
@@ -32,14 +34,23 @@ public class BoardControllerImpl implements BoardController {
 	
 	@Override
 	@RequestMapping(value="/board/listArticles.do", method=RequestMethod.GET)
-	public ModelAndView listArticles(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public ModelAndView listArticles(@RequestParam(defaultValue = "1") int page, 
+			@RequestParam(defaultValue = "1") int range,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		String viewName = getViewName(request);
+		
+		//전체 게시글 수
+		int listCnt = boardService.listArticlesCnt();
+		
+		//페이징 객체 생성
+		Paging paging = new Paging();
+		paging.pageInfo(page, range, listCnt);
 		
 		logger.info("info레벨 : viewName = " + viewName);
 		logger.debug("debug레벨 : msg = " + viewName);
 		
-		List boardList = boardService.listArticles();
+		List boardList = boardService.listArticles(paging);
 		
 		ModelAndView mav = new ModelAndView(viewName);
 		
@@ -53,6 +64,7 @@ public class BoardControllerImpl implements BoardController {
 		String id = (String)session.getAttribute("id");
 		
 		mav.addObject("id", id);
+		mav.addObject("paging", paging);
 		
 		return mav;
 	}
@@ -70,9 +82,18 @@ public class BoardControllerImpl implements BoardController {
 		BoardVO vo = new BoardVO();
 		vo = boardService.viewContent(articleno);
 		
-		System.out.println("sql 결과 : " + vo);
+		vo.setContent(vo.getContent().replace("\r\n", "</br>"));
 		
+		List rippleList = boardService.viewRipple(articleno);
+
 		ModelAndView mav = new ModelAndView(viewName);
+		
+		if(rippleList == null || rippleList.equals("")){
+			mav.addObject("rvo", '0');
+		}else{
+			mav.addObject("rvo", rippleList);
+		}
+		
 		mav.addObject("vo", vo);
 		
 		return mav;
@@ -182,14 +203,24 @@ public class BoardControllerImpl implements BoardController {
 	
 	@Override
 	@RequestMapping(value="/board/search.do", method=RequestMethod.GET)
-	public ModelAndView search(@RequestParam("search") String search, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public ModelAndView search(@RequestParam("search") String search, 
+			@RequestParam(defaultValue="1") int page, @RequestParam(defaultValue = "1") int range,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		String viewName = getViewName(request);
+		
+		//검색된 게시글 수
+		int searchCnt = boardService.searchArticlesCnt(search);
+		
+		//페이징 객체 생성
+		Paging paging = new Paging();
+		paging.pageInfo(page, range, searchCnt);
+		paging.setSearch(search);
 		
 		logger.info("info레벨 : viewName = " + viewName);
 		logger.debug("debug레벨 : msg = " + viewName);
 		
-		List searchList = boardService.searchArticles(search);
+		List searchList = boardService.searchArticles(paging);
 		
 		ModelAndView mav = new ModelAndView(viewName);
 		
@@ -204,8 +235,83 @@ public class BoardControllerImpl implements BoardController {
 		
 		mav.addObject("id", id);
 		mav.addObject("search", search);
+		mav.addObject("paging", paging);
 		
 		return mav;
+	}
+
+	@Override
+	@RequestMapping(value="/board/ripple.do", method=RequestMethod.POST)
+	public ModelAndView ripple(@ModelAttribute RippleVO vo, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		response.setCharacterEncoding("UTF-8"); 
+		response.setContentType("text/html; charset=UTF-8");
+		request.setCharacterEncoding("UTF-8");
+		
+		String viewName = getViewName(request);
+		
+		logger.info("info레벨 : viewName = " + viewName);
+		logger.debug("debug레벨 : msg = " + viewName);
+		
+		ModelAndView mav = new ModelAndView(viewName);
+		
+		boardService.ripple(vo);
+		
+		String contextPath = request.getContextPath();
+		int articleno = vo.getArticleno();
+		PrintWriter pw = response.getWriter();
+		pw.println("<script> alert('저장되었습니다'); location.href='"+contextPath+"/board/content.do?num="+articleno+"'</script>");
+		pw.flush();
+		
+		return null;
+	}
+	
+	@Override
+	@RequestMapping(value="/board/rupdate.do", method=RequestMethod.POST)
+	public ModelAndView uripple(@ModelAttribute RippleVO vo, @RequestParam("articleno") int articleno,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+		response.setCharacterEncoding("UTF-8"); 
+		response.setContentType("text/html; charset=UTF-8");
+		request.setCharacterEncoding("UTF-8");
+		
+		String viewName = getViewName(request);
+		
+		logger.info("info레벨 : viewName = " + viewName);
+		logger.debug("debug레벨 : msg = " + viewName);
+		
+		ModelAndView mav = new ModelAndView(viewName);
+		
+		System.out.println("덧글 : " + vo.getRipple());
+		
+		boardService.rupdate(vo);
+		
+		String contextPath = request.getContextPath();
+		PrintWriter pw = response.getWriter();
+		pw.println("<script> alert('수정되었습니다'); location.href='"+contextPath+"/board/content.do?num="+articleno+"'</script>");
+		pw.flush();
+		
+		return null;
+	}
+	
+	@Override
+	@RequestMapping(value="/board/deleter", method=RequestMethod.GET)
+	public ModelAndView deleter(@RequestParam("rno")int rno, @RequestParam("num")int articleno, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		response.setCharacterEncoding("UTF-8"); 
+		response.setContentType("text/html; charset=UTF-8");
+		request.setCharacterEncoding("UTF-8");
+		
+		String viewName = getViewName(request);
+
+		logger.info("info레벨 : viewName = " + viewName);
+		logger.debug("debug레벨 : msg = " + viewName);
+		
+		boardService.deleter(rno);
+		
+		String contextPath = request.getContextPath();
+		PrintWriter pw = response.getWriter();
+		pw.println("<script> alert('삭제되었습니다'); location.href='"+contextPath+"/board/content.do?num="+articleno+"'</script>");
+		pw.flush();
+		
+		return null;
 	}
 	
 	private String getViewName(HttpServletRequest request) throws Exception{
@@ -239,4 +345,5 @@ public class BoardControllerImpl implements BoardController {
 		}
 		return viewName;
 	}
+	
 }

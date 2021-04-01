@@ -26,7 +26,11 @@
 				</a>
 			</td>
 			<td>
-				<h1><font size=30>스프링 실습 홈페이지!!</font></h1>
+				<h1><font size=30>
+					<a href="${contextPath }/member/listMembers.do" style="text-decoration: none; color: black">
+						스프링 실습 홈페이지
+					</a>
+				</font></h1>
 			</td>
 			<td>
 				<c:choose>
